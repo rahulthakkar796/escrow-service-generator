@@ -1,20 +1,19 @@
 {
   "name": "escrow-service-generator",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
-  "repository":"rahulthakkar796/escrow-service-generator",
+  "repository": "rahulthakkar796/escrow-service-generator",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-"escrow",
-"milestone smartcontract",
-"Escrow smartcontract",
-"Milestone smart contract",
-"Escrow smart contract"
-
-],
+    "escrow",
+    "milestone smartcontract",
+    "Escrow smartcontract",
+    "Milestone smart contract",
+    "Escrow smart contract"
+  ],
   "author": "",
   "license": "ISC"
 }
