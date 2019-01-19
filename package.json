@@ -1,5 +1,5 @@
 {
-  "name": "@rahulthakkar/escrow-service-generator",
+  "name": "escrow-service-generator",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
