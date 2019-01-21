@@ -1,5 +1,4 @@
 # escrow-service-generator
-Node module that provides basic smart contrcats to create an escrow service using ERC20 tokens as a payment method,
 It provides implementations of ERC20 token,Milestone contract,Vault contract and receive contrcat, you can use these contracts as a reference to implement en escrow service according to your logic
 
 
