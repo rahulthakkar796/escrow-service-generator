@@ -19,7 +19,7 @@ import 'escrow-service-generator/Service/Milestone.sol';
 ```
 
 
-> You need an ethereum development framework for the above import statements to work! Check out these guides for [Truffle] or [Embark].
+> You need an ethereum development framework for the above import statements to work! Check out these guides for [Truffle](https://truffleframework.com/docs/truffle/quickstart) or [Embark](https://embark.status.im/docs/quick_start.html).
 
 
 
