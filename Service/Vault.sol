@@ -4,7 +4,7 @@ pragma solidity ^0.4.24;
 //    function displayBalance()public constant returns(uint balance);
 //    function _Transfer(address own,uint amount) public returns(bool success);
 // }
-contract EscrowInterface{
+contract ERC20TokenInterface{
       function transferFrom(address from, address to, uint tokens) external returns (bool success);
       function approve(address spender, uint tokens) public returns (bool success);
       function balanceOf(address tokenOwner) public constant returns (uint balance);
@@ -14,12 +14,12 @@ contract EscrowInterface{
 }
 
 contract Vault{
-    EscrowInterface e;
+    ERC20TokenInterface e;
     address public  owner;
     constructor (address add) public
     {
         owner = msg.sender;
-        e = EscrowInterface(add);
+        e = ERC20TokenInterface(add);
     }
     function displayBlanace()public view returns(uint){
 

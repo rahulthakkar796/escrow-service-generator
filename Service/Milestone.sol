@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 //Escrow interface
-contract escrowInterface{
+contract ERC20TokenInterface{
      function balanceOf(address tokenOwner) public view returns (uint balance);
 }
 
@@ -45,7 +45,7 @@ contract Milestone{
 
     //mapping(address=>list[])public  milestoneMap;
     vaultInterface v;
-    escrowInterface e;
+    ERC20TokenInterface e;
     //mapping(uint=>milestoneList) listMilestone;
 
     //bool conditions for validations
@@ -61,7 +61,7 @@ contract Milestone{
         admin = msg.sender;
         vault=_vault;
         v = vaultInterface(_vault);
-        e = escrowInterface(escrow);
+        e = ERC20TokenInterface(escrow);
         
     }
     //modifier for validations
