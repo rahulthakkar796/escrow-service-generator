@@ -1,5 +1,5 @@
 # escrow-service-generator
-It provides implementation of ERC20 token,Milestone contract,Vault contract and Receive contrcat, you can use these contracts as a reference to implement an escrow service according to your logic
+It provides implementation of ERC20 token,Milestone contract,Vault contract and Receive contract, you can use these contracts as a reference to implement an escrow service according to your logic
 
 
 ### Installation
