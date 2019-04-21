@@ -17,7 +17,7 @@ npm install escrow-service-generator
 ### Usage
 
 ```
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.5;
 
 import 'escrow-service-generator/ERC20/ERC20Token.sol';
 import 'escrow-service-generator/Service/Milestone.sol';
