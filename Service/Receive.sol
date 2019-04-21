@@ -1,16 +1,16 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.5;
 
-contract ERC20TokenInterface{
-    function balanceOf(address tokenOwner) public constant returns (uint balance);
+interface EscrowInterface{
+    function balanceOf(address tokenOwner) external view returns (uint balance);
     function transfer(address to, uint tokens) external returns (bool success) ;
 }
 
 
 contract Receive{
-    ERC20TokenInterface e;
+    EscrowInterface e;
     constructor (address add) public
     {
-        e = ERC20TokenInterface(add);
+        e = EscrowInterface(add);
     }
     function showBalance()public view returns(uint balance){
         return e.balanceOf(msg.sender);

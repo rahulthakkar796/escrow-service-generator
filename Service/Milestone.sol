@@ -1,13 +1,37 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.5;
+
+
 //Escrow interface
-contract ERC20TokenInterface{
-     function balanceOf(address tokenOwner) public view returns (uint balance);
+
+contract Factory {
+    Milestone[] newContracts;
+    uint counter=0;
+    function createContract (address escrow,address _vault,address _Seller,address _buyer)public{
+ 
+        Milestone newContract =new Milestone(escrow,_vault,_Seller,_buyer);
+        newContracts.push(newContract);
+        counter++;
+       
+    }
+
+    function getAddress() public view  returns(address){
+        return address(newContracts[counter-1]);
+    } 
+    function getNumbers() public view returns(uint){
+        return newContracts.length;
+    }
+
+}
+
+
+interface escrowInterface{
+     function balanceOf(address tokenOwner) external view returns (uint balance);
 }
 
 //vault interface to interact with vualt contract
-contract vaultInterface{
-    function receiveFrom(address from,address to,uint amount)public returns(bool);
-    function transferTo(address from,address to,uint amount)public returns(bool);
+interface vaultInterface{
+    function receiveFrom(address from,address to,uint amount)external returns(bool);
+    function transferTo(address from,address to,uint amount)external returns(bool);
 
 }
 
@@ -29,6 +53,7 @@ contract Milestone{
         uint price;
         uint duration;
         uint id;
+        uint currentTime;
         MilestoneStatus status;
 
         
@@ -45,7 +70,7 @@ contract Milestone{
 
     //mapping(address=>list[])public  milestoneMap;
     vaultInterface v;
-    ERC20TokenInterface e;
+    escrowInterface e;
     //mapping(uint=>milestoneList) listMilestone;
 
     //bool conditions for validations
@@ -61,7 +86,7 @@ contract Milestone{
         admin = msg.sender;
         vault=_vault;
         v = vaultInterface(_vault);
-        e = ERC20TokenInterface(escrow);
+        e = escrowInterface(escrow);
         
     }
     //modifier for validations
@@ -75,25 +100,18 @@ contract Milestone{
         _;
         
     }
-    // modifier completedSeller(uint id){
-    //     require(l.status==MilestoneStatus.completedBySeller,"plz wait for seller to confirm the milestone!");
-    //     _;
-    // }
-     
     modifier onlyAdmin{
         require(msg.sender==admin);
         _;
-        
     }
 
-    function createMilestone(string _title,uint _price,uint _duration)onlyBuyer public returns(bool){
-       
-        
+    function createMilestone(string memory _title,uint _price,uint _duration)onlyBuyer public returns(bool){
        listArr.push(milestoneList(
            _title,
            _price,
            _duration * 60,
            listArr.length,
+           0,
             MilestoneStatus.created
        ))-1;
      
@@ -105,16 +123,10 @@ contract Milestone{
    
     //function to activate specific milestone
     function activateMilestone(uint id) public onlyBuyer returns(bool) {
-        
-        //  require(l.status==MilestoneStatus.created,"error in activating milestone");
-        //  totalTime=now  + l.duration;
-        //  storeInVault(buyer,vault,l.price);
-        //  l.status=MilestoneStatus.activated;
-        //  return true;
-         milestoneList l=listArr[id];
+         milestoneList memory l=listArr[id];
         require(l.status==MilestoneStatus.created,"error in activate function!");
-        
-         totalTime=now+l.duration;
+         l.currentTime=now;
+         totalTime=l.currentTime+l.duration;
          storeInVault(buyer,vault,l.price);
          l.status=MilestoneStatus.activated;
          return true;
@@ -122,29 +134,24 @@ contract Milestone{
             
     //function to cancel specific milestone  by only buyer
     function cancelBuyer(uint id) public onlyBuyer returns(bool){
-        
-         milestoneList l=listArr[id];
+         milestoneList memory l=listArr[id];
          require(l.status!=MilestoneStatus.canceledBySeller && l.status==MilestoneStatus.activated && l.status!=MilestoneStatus.completedBySeller && l.status!=MilestoneStatus.completedByBoth && l.status!=MilestoneStatus.canceledByBuyer && now<=totalTime,"error in cancelMilestone function or already canceled by seller");
          l.status = MilestoneStatus.canceledByBuyer; 
          v.transferTo(vault,buyer,l.price);
-         
-         return true; 
-        
+         return true;    
     }
     //function to complete milestone by only buyer
     function completeMilestoneBuyer(uint id)public  onlyBuyer returns(bool){
-          milestoneList l=listArr[id];
+          milestoneList memory l=listArr[id];
           require(l.status==MilestoneStatus.completedBySeller,"error in completeMilestoneBuyer function");        
           v.transferTo(vault,seller,l.price);
           l.status=MilestoneStatus.completedByBoth;
           return true;
         
     }
-    
-
     //request function in case seller don't complete the milstone and now is > totalTime
     function requestByBuyer(uint id) public onlyBuyer returns(bool){
-              milestoneList l=listArr[id];
+              milestoneList memory l=listArr[id];
              require(l.status!=MilestoneStatus.canceledBySeller && l.status!=MilestoneStatus.completedByBoth && l.status==MilestoneStatus.activated && now>totalTime && l.status!=MilestoneStatus.completedBySeller && l.status!=MilestoneStatus.canceledByBuyer && l.status!=MilestoneStatus.requestedBySeller && l.status!=MilestoneStatus.requestedByBuyer,"error requesting by buyer");
            
              l.status=MilestoneStatus.requestedByBuyer;
@@ -153,14 +160,13 @@ contract Milestone{
              return true;
 
     }
-
     function requestBySeller(uint id) public onlySeller returns(bool){
-            milestoneList l=listArr[id];
+            milestoneList memory l=listArr[id];
              require(l.status==MilestoneStatus.completedBySeller && now> totalTime,"error in request by seller");          
               l.status=MilestoneStatus.requestedBySeller;
               v.transferTo(vault,seller,l.price);
 
-              //delete(listMilestone[id]);
+            
               return true;
 
     }
@@ -169,7 +175,7 @@ contract Milestone{
     function cancelSeller(uint id) public onlySeller returns(bool){
         
          
-         milestoneList l=listArr[id];
+         milestoneList memory l=listArr[id];
          require(l.status!=MilestoneStatus.canceledBySeller && l.status==MilestoneStatus.activated && l.status!=MilestoneStatus.completedBySeller && l.status!=MilestoneStatus.completedByBoth && l.status!=MilestoneStatus.canceledByBuyer && now<=totalTime,"error in cancelMilestone function or already canceled by seller");
         
          l.status = MilestoneStatus.canceledBySeller; 
@@ -182,7 +188,7 @@ contract Milestone{
 
     //function to complete milestone by seller
     function completeMilestoneSeller(uint id) public onlySeller returns(bool){
-        milestoneList l=listArr[id];
+        milestoneList memory l=listArr[id];
         require(l.status!=MilestoneStatus.canceledBySeller && l.status!=MilestoneStatus.canceledByBuyer  && l.status!=MilestoneStatus.completedByBoth && l.status==MilestoneStatus.activated && l.status!=MilestoneStatus.completedBySeller && now<=totalTime,"error in completeMilestoneSeller");
         l.status=MilestoneStatus.completedBySeller;
        
@@ -191,23 +197,7 @@ contract Milestone{
 
     }
 
-    //function to release funds from vault contract
-    // function releaseFromVault(uint id) public returns(bool) {
-        
-    //      if(completedByBuyer==true && completedBySeller==true && now<=totalTime){
-    //      return v.transferTo(admin,seller,l.price);
-    //         }
-    //      else if(completedBySeller==true && now>totalTime){
-    //             return v.transferTo(admin,seller,l.price);
-                
-    //         }
-    //      else if(completedBySeller!=true && now>totalTime){
-    //           return v.transferTo(admin,buyer,l.price);
-            
-    //         }
-            
-    // }
-   
+    
         
     //function to store coins in vault contract
     function storeInVault(address from,address to,uint amount)public returns(bool){
@@ -220,23 +210,23 @@ contract Milestone{
     function noOfMilestones()view public returns(uint){
         return listArr.length;
     }
-    function getTitle(uint id)view public returns(string){
-         milestoneList l=listArr[id];
+    function getTitle(uint id)view public returns(string memory){
+         milestoneList memory l=listArr[id];
         
         return l.title;
     }
     function getPrice(uint id)view public returns(uint){
-         milestoneList l=listArr[id];
+         milestoneList memory l=listArr[id];
         return l.price;
 
     }
     function getDuration(uint id)view public returns(uint){
-         milestoneList l=listArr[id];
+         milestoneList memory l=listArr[id];
         return (l.duration)/60;
 
     }
     function getStatus(uint id)view public returns(uint){
-         milestoneList l=listArr[id];
+         milestoneList memory l=listArr[id];
         return uint(l.status);
 
     }
